@@ -1,0 +1,78 @@
+import torch
+import torch.nn.functional as F
+from torch import nn
+import math
+import numpy as np
+#18 August, third try:
+#Going to feed it data in epochs using the equation and then use code from:
+#https://medium.com/inspired-ideas/learning-a-quadratic-equation-with-pytorch-intro-to-pytorch-fa7bcef380a4
+#to test it
+def data_generator(data_size=50):
+    # f(x) = y = 8x^2 + 4x - 3
+    inputs = []
+    labels = []
+    
+    # loop data_size times to generate the data
+    for ix in range(data_size):
+        
+        # generate a random number between 0 and 1000
+        x = np.random.randint(1000) / 1000
+        
+        # calculate the y value using the function 8x^2 + 4x - 3
+        y = np.cos(x)
+        
+        # append the values to our input and labels lists
+        inputs.append([x])
+        labels.append([y])
+        
+    return inputs, labels
+
+class JNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        #Define network layers
+        self.layers = nn.Sequential(
+            nn.Linear(100,12),
+            nn.ReLU(),
+            nn.Dropout(p=0.5),
+            nn.Linear(12,10),
+            nn.ReLU(),
+            nn.Linear(10,100)
+        )
+
+    def forward(self, x):
+        #Forward pass
+        x = torch.sigmoid(self.layers(x))
+        return x
+# define our data generation function
+
+
+#Instantiate model
+model = JNet()
+
+#Input
+x = torch.linspace(-math.pi,math.pi,100)
+
+Force_groundtruth = torch.cos(x)
+
+#loss function and optimizer
+loss_fn = torch.nn.MSELoss(reduction='sum')
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-2)
+
+
+#Main training loop
+for iter in range(5000):
+#     #forward pass first
+    Force_Pred = model(x)
+#     # Compute and print loss.
+    loss = loss_fn(Force_Pred, Force_groundtruth)   #differnece between ground truth and estimate from forward pass
+    
+    if iter % 100 == 99:           #This simply prints the loss every 100 iterations
+        print(iter, loss.item())
+
+#     #The step I don't understand
+    optimizer.zero_grad()   #Alternatively: model.zero_grad()
+#     #Backward pass
+    loss.backward()         #Uses chain rule to obtain gradients
+#     #Optimizer update
+    optimizer.step()        #Updates weights using gradient of loss
