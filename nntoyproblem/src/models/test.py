@@ -18,5 +18,8 @@ import numpy as np
 # print(Force)
 
 #---------------------------------------------
-W1 = torch.randn(2,8)
-print(W1)
+# W1 = torch.randn(2,8)
+# print(W1)
+#------------------------------------------------
+a = 3
+print(a, 'sec Elapsed')
